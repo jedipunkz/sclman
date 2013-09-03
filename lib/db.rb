@@ -36,7 +36,7 @@ end
 
 def create_table(tablename)
   if tablename == "lbmembers" then
-    ConnectDb.connect() do | sock |
+    ConnectDb.connect() do |sock|
       sock.do("CREATE TABLE #{tablename} (
                   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
                   instancename CHAR(20) NOT NULL,
@@ -45,7 +45,7 @@ def create_table(tablename)
                   PRIMARY KEY (id))")
     end
   elsif tablename == "counter" then
-    ConnectDb.connect() do | sock |
+    ConnectDb.connect() do |sock|
       sock.do("CREATE TABLE #{tablename} (
                   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
                   groupname CHAR(20) NOT NULL,
@@ -58,16 +58,28 @@ def create_table(tablename)
 end
 
 def insert_table_lbmembers(instancename, ipaddr, groupname)
-  ConnectDb.connect() do | sock |
+  ConnectDb.connect() do |sock|
     sock.do("INSERT INTO lbmembers (id, instancename, ipaddr, groupname) VALUE(?, ?, ?, ?)",
              nil, "#{instancename}", "#{ipaddr}", "#{groupname}")
   end
 end
 
+def delete_table_lbmembers(instancename)
+  ConnectDb.connect() do |sock|
+    sock.do("DELETE FROM lbmembers WHERE instancename = ?", instancename)
+  end
+end
+
 def insert_table_counter(groupname, count)
-  ConnectDb.connect() do | sock |
+  ConnectDb.connect() do |sock|
     sock.do("INSERT INTO counter (id, groupname, count) VALUE(?, ?, ?)",
                 nil, "#{groupname}", "#{count}")
+  end
+end
+
+def delete_table_counter(groupname)
+  ConnectDb.connect() do |sock|
+    sock.do("DELETE FROM counter WHERE groupname = ?", groupname)
   end
 end
 

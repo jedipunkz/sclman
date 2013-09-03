@@ -120,4 +120,3 @@ def chef_delete_node(instancename)
   cd.config[:yes] = true
   cd.run
 end
-

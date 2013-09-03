@@ -3,9 +3,9 @@
 # usage : ruby bootstrap_cli.rb bootstrap flavor image key environment instancename
 #       : ruby bootstrap_cli.rb delete environment
 
-require "./lib/chef.rb"
-require "./lib/openstack.rb"
-require "./lib/db.rb"
+require './lib/chef.rb'
+require './lib/openstack.rb'
+require './lib/db.rb'
 
 method      = ARGV[0]
 flavor      = ARGV[1]
@@ -51,20 +51,22 @@ if method == "bootstrap" then
   num = 0
   role_trig = 0
   while num < 3 do
-    puts "instance is booting... : #{instance}#{num}"
     if role_trig == 0 then
+      puts "instance is booting... : #{instance}lb#{num}"
       openstack_create_node(flavor, image, key, instance+"lb"+num.to_s)
       ipaddr = openstack_search_ip(instance)
       sleep(20)
       chef_create_node(instance+"lb"+num.to_s, ipaddr, environment, "lb")
+      insert_table_lbmembers(instance+"lb"+num.to_s, ipaddr, environment)
       role_trig = 1
     else
+      puts "instance is booting... : #{instance}web#{num}"
       openstack_create_node(flavor, image, key, instance+"web"+num.to_s)
       ipaddr = openstack_search_ip(instance)
       sleep(20)
       chef_create_node(instance+"web"+num.to_s, ipaddr, environment, "web")
+      insert_table_lbmembers(instance+"web"+num.to_s, ipaddr, environment)
     end
-    insert_table_lbmembers(instance+num.to_s, ipaddr, environment)
     num += 1
   end
 
@@ -76,9 +78,13 @@ elsif method == "delete" then
     puts usage
     exit
   end
-  instancename = select_groupname(environment)
-  puts instancename
+  instancename = db_search_instance(environment)
+  instancename.each do |server|
+    puts "Deleting Node : #{server} ..."
+    delete_table_lbmembers(server)
+    openstack_delete_node(server)
+    chef_delete_node(server)
+  end
 else
   puts usage
 end
-

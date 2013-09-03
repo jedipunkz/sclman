@@ -58,8 +58,12 @@ def openstack_delete_node(instancename)
     instance = sock.servers.find { |i| i.name = instancename }
     server = sock.delete_server(instance.id)
     p server
+    p instance
+    p instance.id
+    p '---'
   end
 end
+
 
 # openstack_delete_node("test99")
 
