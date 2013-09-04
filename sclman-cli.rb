@@ -82,8 +82,9 @@ elsif method == "delete" then
   instancename.each do |server|
     puts "Deleting Node : #{server} ..."
     delete_table_lbmembers(server)
-    openstack_delete_node(server)
     chef_delete_node(server)
+    openstack_delete_node(server)
+    sleep(1)
   end
 else
   puts usage

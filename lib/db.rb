@@ -126,3 +126,15 @@ def db_search_ipaddr(instancename)
     end
   end
 end
+
+def db_search_instance_all()
+  instances = []
+  ConnectDb.connect() do |sock|
+    sth = sock.execute("SELECT * FROM lbmembers")
+    while row = sth.fetch do
+      instances << row["instancename"]
+    end
+  end
+  return instances
+end
+

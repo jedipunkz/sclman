@@ -100,7 +100,7 @@ def chef_create_node(instancename, ipaddr, envname, role)
   if role == "lb" then
     kb.config[:run_list ] = "role[base]", "role[lb]"
   elsif role == "web" then
-    kb.config[:run_list ] = "role[base]", "role[web]"
+    kb.config[:run_list ] = "role[base]", "role[web]", "role[sensu-client]"
   else
     puts "error was occoured with role selection"
   end
