@@ -20,7 +20,7 @@ end
 ini = IniLoad.new
 $sensu_url = ini.search("SENSU", "sensu_url")
 
-def sensu_get_load()
+def sensu_get_instance_load()
   instances = []
   instancename = db_search_instance_all()
   instancename.each do |server|

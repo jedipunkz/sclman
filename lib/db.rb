@@ -83,6 +83,14 @@ def delete_table_counter(groupname)
   end
 end
 
+def update_counter(groupname)
+  ConnectDb.connect() do |sock|
+    sth = sock.execute("UPDATE counter SET count = count + 1 WHERE groupname = ?", "#{groupname}")
+  end
+end
+
+update_counter("lb01")
+
 def show_table(tablename)
   if tablename == "lbmembers" then
     ConnectDb.connect() do | sock |
@@ -119,6 +127,39 @@ def db_search_instance(groupname)
 end
 
 def db_search_ipaddr(instancename)
+  ipaddr = []
+  ConnectDb.connect() do | sock |
+    sth = sock.execute("SELECT * FROM lbmembers WHERE instancename = ?", "#{instancename}")
+    while row = sth.fetch_hash do
+      return row["ipaddr"]
+    end
+  end
+end
+
+def db_search_group(instancename)
+  groups = []
+  ConnectDb.connect() do | sock |
+    sth = sock.execute("SELECT * FROM lbmembers WHERE instancename = ?", "#{instancename}")
+    while row = sth.fetch_hash do
+      groups << row["groupname"]
+    end
+  end
+  groups.uniq
+  return groups
+end
+
+def db_search_group_all()
+  groups = []
+  ConnectDb.connect() do |sock|
+    sth = sock.execute("SELECT * FROM lbmembers")
+    while row = sth.fetch do
+      groups << row["groupname"]
+    end
+  end
+  return groups
+end
+
+def db_search_ipaddr(instancename)
   ConnectDb.connect() do |sock|
     sth = sock.execute("SELECT * FROM lbmembers WHERE instancename = ?", "#{instancename}")
     while row = sth.fetch do
@@ -136,5 +177,14 @@ def db_search_instance_all()
     end
   end
   return instances
+end
+
+def db_search_count(groupname)
+  ConnectDb.connect() do |sock|
+    sth = sock.execute("SELECT * FROM counter WHERE groupname = ?", "#{groupname}")
+    while row = sth.fetch do
+      return row["count"]
+    end
+  end
 end
 

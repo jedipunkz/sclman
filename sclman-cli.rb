@@ -69,6 +69,7 @@ if method == "bootstrap" then
     end
     num += 1
   end
+  insert_table_counter(environment, 3)
 
 elsif method == "delete" then
   method      = ARGV[0]
@@ -82,9 +83,10 @@ elsif method == "delete" then
   instancename.each do |server|
     puts "Deleting Node : #{server} ..."
     delete_table_lbmembers(server)
+    delete_table_counter(environment)
     chef_delete_node(server)
     openstack_delete_node(server)
-    sleep(1)
+    sleep(3)
   end
 else
   puts usage
