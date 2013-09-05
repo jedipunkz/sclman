@@ -47,10 +47,9 @@ class SclmanDaemon < DaemonSpawn::Base
           stb_group = group_all - wng_group[0]
           puts "stability groups : #{stb_group}"
           # adding server
+          db_count = db_search_count(adding)
+          count = db_count - 1
           wng_group[0].each do |adding|
-            count = db_search_count(adding)
-            # ++count
-            count += 1
             puts "adding server at #{adding}, count : #{count}"
             instances = db_search_instance(adding)
             instance = instances[2].split("web")
@@ -61,6 +60,7 @@ class SclmanDaemon < DaemonSpawn::Base
             chef_create_node(shortname+"web"+count.to_s, ipaddr, adding, "web")
             insert_table_lbmembers(shortname+"web"+count.to_s, ipaddr, adding)
             update_counter(adding)
+            count += 1
           end
         end
       end

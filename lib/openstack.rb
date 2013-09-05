@@ -22,6 +22,7 @@ module OpenStackCompute
     $openstack_api_key = ini.search("OPENSTACK", "openstack_api_key")
     $openstack_auth_url = ini.search("OPENSTACK", "openstack_auth_url")
     $openstack_tenant = ini.search("OPENSTACK", "openstack_tenant")
+    $openstack_net_id = ini.search("OPENSTACK", "openstack_net_id")
     conn = Fog::Compute.new({
       :provider => 'OpenStack',
       :openstack_api_key => $openstack_api_key,
@@ -45,9 +46,10 @@ def openstack_create_node(flavorname, imagename, keyname, instancename)
     server = sock.servers.create :name => instancename,
                                  :image_ref => image.id,
                                  :flavor_ref => flavor.id,
-                                 :key_name => keyname
+                                 :key_name => keyname,
+                                 :nics => ["net_id" => $openstack_net_id]
     server.wait_for { ready? }
-    p server
+    puts server
   end
 end
 
