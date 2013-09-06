@@ -83,13 +83,19 @@ def delete_table_counter(groupname)
   end
 end
 
-def update_counter(groupname)
+def update_inc_counter(groupname)
   ConnectDb.connect() do |sock|
     sth = sock.execute("UPDATE counter SET count = count + 1 WHERE groupname = ?", "#{groupname}")
   end
 end
 
-update_counter("lb01")
+def update_dec_counter(groupname)
+  ConnectDb.connect() do |sock|
+    sth = sock.execute("UPDATE counter SET count = count - 1 WHERE groupname = ?", "#{groupname}")
+  end
+end
+
+# update_counter("lb01")
 
 def show_table(tablename)
   if tablename == "lbmembers" then
