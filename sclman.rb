@@ -80,10 +80,15 @@ class SclmanDaemon < DaemonSpawn::Base
     puts "start : #{Time.now}"
     trig_add = 0; counter_add = 0; trig_del = 0; counter_del = 0
     loop do
-      # get all of groups(environmet)
-      db_group_all = db_search_group_all()
-      $group_all = db_group_all.uniq
-      puts "all of groups : #{$group_all}"
+      process_sclman_cli = `ps axu | grep sclman-cli.rb | grep -v grep`
+      if process_sclman_cli != "" then
+        puts "sclman-cli.rb is running. please wait a moment."
+        sleep(3)
+        redo
+      end
+      db_all_group = db_search_group_all()
+      $all_group = db_all_group.uniq
+      puts "all of groups : #{$all_group}"
 
       warning_instances = sensu_get_instance_load()
       groups = []
@@ -96,11 +101,12 @@ class SclmanDaemon < DaemonSpawn::Base
         end
         $wng_group = groups.uniq
         puts "warning groups : #{$wng_group[0]}"
-        stb_group = $group_all - $wng_group[0]
+        stb_group = $all_group - $wng_group[0]
         puts "stability groups : #{$stb_group}"
       end
 
-      if $group_all != [] and warning_instances != [] then
+      # if warning_instances are exist, it will add a server
+      if $all_group != [] and warning_instances != [] then
         if trig_add == 1 then
           counter_add += 1
           puts "counter_add : #{counter_add}"
@@ -113,7 +119,8 @@ class SclmanDaemon < DaemonSpawn::Base
         else
           trig_add = 1; trig_del = 0
         end
-      elsif $group_all != [] and $stb_group != [] then
+      # if stability group is exist, it will be delete a server
+      elsif $all_group != [] and $stb_group != [] then
         if trig_del == 1 then
           counter_del += 1
           puts "counter_del : #{counter_del}"
@@ -126,7 +133,10 @@ class SclmanDaemon < DaemonSpawn::Base
         else
           trig_add = 0; trig_del = 1
         end
-      elsif $group_all != [] and warning_instances == [] then
+      # if warning instances are not exist and all groups is exist,
+      # it will delete a server : stb_group will be exist when only one
+      # environment is exist.
+      elsif $all_group != [] and warning_instances == [] then
         if trig_del == 1 then
           counter_del += 1
           puts "counter_del : #{counter_del}"
@@ -134,7 +144,7 @@ class SclmanDaemon < DaemonSpawn::Base
           counter_del = 0
         end
         if counter_del >= 10 then
-          del_server("group_all")
+          del_server("all_group")
           counter_del = 0; trig_add = 0; trig_del = 0
         else
           trig_add = 0; trig_del = 1
