@@ -22,6 +22,9 @@ ini = IniLoad.new
 $man_flavor = ini.search("MANAGER", "man_flavor")
 $man_image = ini.search("MANAGER", "man_image")
 $man_key = ini.search("MANAGER", "man_key")
+$man_sensitivity = ini.search("MANAGER", "man_sensitivity")
+$man_pid = ini.search("MANAGER", "man_pid")
+$man_log = ini.search("MANAGER", "man_log")
 
 def make_shortname(environment)
   instances = db_search_instance(environment)
@@ -108,7 +111,7 @@ class SclmanDaemon < DaemonSpawn::Base
         else
           counter_add = 0
         end
-        if counter_add >= 10 then
+        if counter_add >= $man_sensitivity.to_i then
           add_server()
           counter_add = 0; trig_add = 0; trig_del = 0
         else
@@ -123,7 +126,7 @@ class SclmanDaemon < DaemonSpawn::Base
         else
           counter_del = 0
         end
-        if counter_del >= 10 then
+        if counter_del >= $man_sensitivity.to_i then
           del_server("stb_group")
           counter_del = 0; trig_add = 0; trig_del = 0
         else
@@ -141,7 +144,7 @@ end
 
 SclmanDaemon.spawn!({
     :working_dir => "/tmp",
-    :pid_file => "/tmp/sclman.pid",
-    :log_file => "/tmp/sclman.log",
+    :pid_file => $man_pid,
+    :log_file => $man_log,
     :sync_log => true,
   })
