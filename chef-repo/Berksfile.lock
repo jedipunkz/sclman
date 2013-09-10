@@ -1,0 +1,87 @@
+{
+  "sources": {
+    "nginx.lb": {
+      "locked_version": "1.1.4",
+      "git": "git@gitlab.kddiweb.jp:thirai/cookbook-nginx_lb.git",
+      "ref": "8a16cbded59ee1aeff91e9b4a49dfb2ee91a0f48"
+    },
+    "nginx": {
+      "locked_version": "1.1.4",
+      "git": "git@gitlab.kddiweb.jp:thirai/cookbook-nginx.git",
+      "ref": "c7d6be135160f1ffbaca2816efd4a10fa10de113"
+    },
+    "apt": {
+      "locked_version": "2.1.1"
+    },
+    "ntp": {
+      "locked_version": "1.4.0"
+    },
+    "chef-client": {
+      "locked_version": "2.1.8",
+      "git": "git@gitlab.kddiweb.jp:thirai/cookbook-chef-client.git",
+      "ref": "876c6765be209a430a67d095ceede420f3ae9642"
+    },
+    "bobcontents": {
+      "locked_version": "0.1.0",
+      "git": "git@gitlab.kddiweb.jp:thirai/bobcontents.git",
+      "ref": "6146f11f4ab73b3b411d4ce4987ad5aa3fa61538"
+    },
+    "yum": {
+      "locked_version": "2.2.0"
+    },
+    "rabbitmq": {
+      "locked_version": "2.0.0"
+    },
+    "redis": {
+      "locked_version": "2.1.1",
+      "git": "https://github.com/jedipunkz/chef-redis.git",
+      "ref": "d061114f716fb8cbcc5c741ca6f96b0eb95be274"
+    },
+    "sensu": {
+      "locked_version": "0.5.2",
+      "git": "https://github.com/jedipunkz/sensu-chef.git",
+      "ref": "1544518d9c0a661db6271c2d77db664a58bd08db"
+    },
+    "monitor": {
+      "locked_version": "0.0.2",
+      "git": "https://github.com/jedipunkz/chef-monitor.git",
+      "ref": "820134aa622e1cc1118b736a0d69f9aa0b58b72a"
+    },
+    "users": {
+      "locked_version": "1.5.2"
+    },
+    "runit": {
+      "locked_version": "1.2.0"
+    },
+    "build-essential": {
+      "locked_version": "1.4.2"
+    },
+    "bluepill": {
+      "locked_version": "2.2.2"
+    },
+    "rsyslog": {
+      "locked_version": "1.8.0"
+    },
+    "ohai": {
+      "locked_version": "1.1.12"
+    },
+    "cron": {
+      "locked_version": "1.2.6"
+    },
+    "erlang": {
+      "locked_version": "1.3.2"
+    },
+    "stunnel": {
+      "locked_version": "2.0.4"
+    },
+    "discovery": {
+      "locked_version": "0.2.0"
+    },
+    "windows": {
+      "locked_version": "1.10.0"
+    },
+    "chef_handler": {
+      "locked_version": "1.1.4"
+    }
+  }
+}

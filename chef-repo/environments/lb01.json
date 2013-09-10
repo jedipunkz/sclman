@@ -1,0 +1,6 @@
+{
+  "name": "lb01",
+  "description": "auto scaler sample environment",
+  "cookbook_versions": {
+  }
+}

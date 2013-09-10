@@ -1,1 +1,2 @@
 *.pem
+chef-repo/data_bags
