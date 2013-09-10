@@ -36,7 +36,7 @@ $chef_server_url = ini.search("CHEF", "chef_server_url")
 $chef_bootstrap_file = ini.search("CHEF", "chef_bootstrap_file")
 $openstack_secret_key = ini.search("OPENSTACK", "openstack_secrete_key")
 
-Chef::Config.from_file(File.expand_path('./.chef/knife.rb'))
+Chef::Config.from_file(File.expand_path('./chef-repo/.chef/knife.rb'))
 
 def chef_check_env(envname)
   i = 0

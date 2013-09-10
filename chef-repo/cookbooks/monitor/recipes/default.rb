@@ -47,6 +47,7 @@ end
   check-mtime.rb
   check-tail.rb
   check-fs-writable.rb
+  check-load.rb
 ].each do |default_plugin|
   cookbook_file "/etc/sensu/plugins/#{default_plugin}" do
     source "plugins/#{default_plugin}"

@@ -46,31 +46,16 @@ def add_server()
 end
 
 def del_server(group)
-  if group == "stb_group" then
-    $stb_group.each do |deleting|
-      db_count_deleting = db_search_count(deleting)
-        count_deleting = db_count_deleting
-      if count_deleting.to_i >= 4 then
-        puts "deleting server at #{deleting}, count_deleting : #{count_deleting}"
-        shortname = make_shortname(deleting)
-        openstack_delete_node(shortname+"web"+count_deleting.to_s)
-        chef_delete_node(shortname+"web"+count_deleting.to_s)
-        delete_table_lbmembers(shortname+"web"+count_deleting.to_s)
-        update_dec_counter(deleting)
-      end
-    end
-  elsif group === "all_group" then
-    $all_group.each do |deleting|
-      db_count_deleting = db_search_count(deleting)
+  $stb_group.each do |deleting|
+    db_count_deleting = db_search_count(deleting)
       count_deleting = db_count_deleting - 1
-      if count_deleting.to_i >= 3 then
-        puts "deleting server at #{deleting}, count_deleting : #{count_deleting}"
-        shortname = make_shortname(deleting)
-        openstack_delete_node(shortname+"web"+count_deleting.to_s)
-        chef_delete_node(shortname+"web"+count_deleting.to_s)
-        delete_table_lbmembers(shortname+"web"+count_deleting.to_s)
-        update_dec_counter(deleting)
-      end
+    if count_deleting.to_i >= 3 then
+      puts "deleting server at #{deleting}, count_deleting : #{count_deleting}"
+      shortname = make_shortname(deleting)
+      openstack_delete_node(shortname+"web"+count_deleting.to_s)
+      chef_delete_node(shortname+"web"+count_deleting.to_s)
+      delete_table_lbmembers(shortname+"web"+count_deleting.to_s)
+      update_dec_counter(deleting)
     end
   end
 end
@@ -90,6 +75,11 @@ class SclmanDaemon < DaemonSpawn::Base
       $all_group = db_all_group.uniq
       puts "all of groups : #{$all_group}"
 
+      if $all_group == [] then
+        sleep(3)
+        redo
+      end
+
       warning_instances = sensu_get_instance_load()
       groups = []
       $wng_group = []
@@ -101,7 +91,11 @@ class SclmanDaemon < DaemonSpawn::Base
         end
         $wng_group = groups.uniq
         puts "warning groups : #{$wng_group[0]}"
-        stb_group = $all_group - $wng_group[0]
+        $stb_group = $all_group - $wng_group[0]
+        puts "stability groups : #{$stb_group}"
+      else
+        $stb_group = $all_group
+        puts "warning groups : []"
         puts "stability groups : #{$stb_group}"
       end
 
@@ -110,6 +104,7 @@ class SclmanDaemon < DaemonSpawn::Base
         if trig_add == 1 then
           counter_add += 1
           puts "counter_add : #{counter_add}"
+          trig_del = 0
         else
           counter_add = 0
         end
@@ -124,27 +119,12 @@ class SclmanDaemon < DaemonSpawn::Base
         if trig_del == 1 then
           counter_del += 1
           puts "counter_del : #{counter_del}"
+          trig_add = 0
         else
           counter_del = 0
         end
         if counter_del >= 10 then
           del_server("stb_group")
-          counter_del = 0; trig_add = 0; trig_del = 0
-        else
-          trig_add = 0; trig_del = 1
-        end
-      # if warning instances are not exist and all groups is exist,
-      # it will delete a server : stb_group will be exist when only one
-      # environment is exist.
-      elsif $all_group != [] and warning_instances == [] then
-        if trig_del == 1 then
-          counter_del += 1
-          puts "counter_del : #{counter_del}"
-        else
-          counter_del = 0
-        end
-        if counter_del >= 10 then
-          del_server("all_group")
           counter_del = 0; trig_add = 0; trig_del = 0
         else
           trig_add = 0; trig_del = 1

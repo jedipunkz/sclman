@@ -56,7 +56,9 @@ if method == "bootstrap" then
       openstack_create_node(flavor, image, key, instance+"lb"+num.to_s)
       ipaddr = openstack_search_ip(instance)
       sleep(20)
-      chef_create_node(instance+"lb"+num.to_s, ipaddr, environment, "lb")
+      fork do
+        chef_create_node(instance+"lb"+num.to_s, ipaddr, environment, "lb")
+      end
       insert_table_lbmembers(instance+"lb"+num.to_s, ipaddr, environment)
       role_trig = 1
     else
@@ -64,7 +66,9 @@ if method == "bootstrap" then
       openstack_create_node(flavor, image, key, instance+"web"+num.to_s)
       ipaddr = openstack_search_ip(instance)
       sleep(20)
-      chef_create_node(instance+"web"+num.to_s, ipaddr, environment, "web")
+      fork do
+        chef_create_node(instance+"web"+num.to_s, ipaddr, environment, "web")
+      end
       insert_table_lbmembers(instance+"web"+num.to_s, ipaddr, environment)
     end
     num += 1
