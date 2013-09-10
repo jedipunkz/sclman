@@ -59,11 +59,11 @@ def del_server(group)
         update_dec_counter(deleting)
       end
     end
-  elsif group === "group_all" then
-    $group_all.each do |deleting|
+  elsif group === "all_group" then
+    $all_group.each do |deleting|
       db_count_deleting = db_search_count(deleting)
       count_deleting = db_count_deleting - 1
-      if count_deleting.to_i >= 4 then
+      if count_deleting.to_i >= 3 then
         puts "deleting server at #{deleting}, count_deleting : #{count_deleting}"
         shortname = make_shortname(deleting)
         openstack_delete_node(shortname+"web"+count_deleting.to_s)
