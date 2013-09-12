@@ -7,17 +7,6 @@ require './lib/sensu.rb'
 require 'inifile'
 require 'daemon_spawn'
 
-class IniLoad
-  def initialize
-    @ini = IniFile.load("/home/thirai/sclman/sclman.conf")
-  end
-
-  def search( section, name )
-    val = @ini[section][name]
-    return "#{val}"
-  end
-end
-
 ini = IniLoad.new
 $man_flavor = ini.search("MANAGER", "man_flavor")
 $man_image = ini.search("MANAGER", "man_image")

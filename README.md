@@ -33,11 +33,12 @@ Required Architecture
 
 * you can use nova-network or neutron
 * you have to run 'sclman' on workstation node
+* it does not mind which 'all in one' arch or 'separated' arch on OpenStack
 
 Usage
 ----
 
-Download sclman.
+Download sclman via git.
 
     % git clone git@gitlab.kddiweb.jp:thirai/sclman.git
     % cd sclman
@@ -52,6 +53,9 @@ Downlooad cookbooks
     % cd chef-repo
     % # setup your .chef, *.pem files, knife.rb
     % berks install --path=./cookbooks
+
+Deploy Sensu
+----
 
 edit sensu server's ip addr.
 
@@ -112,20 +116,35 @@ You can find these instances on OpenStack.
 
 ex.) server_name : foo
 
-    +--------------------------------------+---------+--------+----------------------+
-    | ID                                   | Name    | Status | Networks             |
-    +--------------------------------------+---------+--------+----------------------+
-    | e5f213cb-4e08-4711-af85-51929eb67002 | foolb0  | ACTIVE | int_net=172.24.17.11 |
-    | 4732dcd8-3e72-4197-b7fd-6c8f2095fea4 | fooweb1 | ACTIVE | int_net=172.24.17.12 |
-    | 98323ae6-b6e3-40e5-b28b-63f6f45546c9 | fooweb2 | ACTIVE | int_net=172.24.17.1  |
-    +--------------------------------------+---------+--------+----------------------+
+    +--------------------------------------+---------+--------+---------------------+
+    | ID                                   | Name    | Status | Networks            |
+    +--------------------------------------+---------+--------+---------------------+
+    | 36b15ce8-c7fa-4236-b6cd-b65e83f05cbf | foolb0  | ACTIVE | int_net=172.24.17.1 |
+    | 2230788a-bb34-4cc4-8123-b2f32feaeec9 | fooweb1 | ACTIVE | int_net=172.24.17.4 |
+    | 7dfd21b4-f76e-46d2-b7dc-f2d4278339d5 | fooweb2 | ACTIVE | int_net=172.24.17.3 |
+    +--------------------------------------+---------+--------+---------------------+
 
 Access to LB server via your browser.
 
 ex.) http://172.24.17.11
 
-Make load the web instances
+Put a load to the web instances
 ----
 
 If you make the instances load, sclman will scale web instances and auto connect to the
 Load Balance instance.
+
+    +--------------------------------------+---------+--------+---------------------+
+    | ID                                   | Name    | Status | Networks            |
+    +--------------------------------------+---------+--------+---------------------+
+    | 36b15ce8-c7fa-4236-b6cd-b65e83f05cbf | foolb0  | ACTIVE | int_net=172.24.17.1 |
+    | 2230788a-bb34-4cc4-8123-b2f32feaeec9 | fooweb1 | ACTIVE | int_net=172.24.17.4 |
+    | 7dfd21b4-f76e-46d2-b7dc-f2d4278339d5 | fooweb2 | ACTIVE | int_net=172.24.17.3 |
+    | 50554ea0-adcf-4459-a3c5-3b448b2395d6 | fooweb3 | ACTIVE | int_net=172.24.17.5 |
+    +--------------------------------------+---------+--------+---------------------+
+
+Sensitivity
+----
+
+'man_sensitivity' parameter in sclman.conf is used by sclman.rb manager and used as gain sensitivity.
+If load increase continuously on web instance, sclman.rb add a server. sensitivity is continuously counter.
