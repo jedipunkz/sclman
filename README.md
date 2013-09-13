@@ -5,7 +5,17 @@ Introduce
 ----
 
 sclman is auto scale manager on OpenStack. sclman uses chef, sensu, mysql, so
-it enable us to make easy to migrate AWS, RackSpace or each Cloud Platform.
+it enable us to make easy to migrate AWS, RackSpace or each Cloud
+Platform. sclman-cli.rb is command line tool for bootstraping or deleting
+servers with chef and OpenStack. sclman.rb is manager which monitoring load of
+each servers. if any servers in HA cluster will be getting a load, sclman
+manager will put some servers to that HA cluster. then if load will be getting
+down, sclman manager will delete some servers in that HA cluster.
+
+git
+----
+
+<git@gitlab.kddiweb.jp:thirai/sclman.git>
 
 Author
 ----
@@ -22,9 +32,9 @@ Required Architecture
 ----
 
     +-------------- public network
-    |
-    +----+----+---+
-    | vm | vm |.. |
+    |                                               +-------------+
+    +----+----+---+                                 |  sclman.rb  |
+    | vm | vm |.. |                                 |sclman-cli.rb|
     +-------------+ +-------------+ +-------------+ +-------------+
     |  openstack  | | chef server | | sensu server| | workstation |
     +-------------+ +-------------+ +-------------+ +-------------+
@@ -97,6 +107,41 @@ URL.
 You can use github.com/rcbops/chef-cookbooks to deploy OpenStack.
 
 <https://github.com/rcbops/chef-cookbooks>
+
+setup sclman.conf
+----
+
+setup sclman.conf for each service and self parameters such as openstack
+endpoint information, username, mysql username, password ....
+
+    [DB]
+    dbname = sclman
+    dbuser = sclmanuser
+    dbpass = sclmanpass
+    [CHEF]
+    chef_user = thirai
+    chef_secret_key = /home/thirai/sclman/chef-repo/.chef/thirai.pem
+    chef_validation_key = /home/thirai/sclman/chef-repo/.chef/chef-validator.pem
+    chef_server_url = "https://10.200.10.96"
+    #chef_bootstrap_file = /home/thirai/chef-full.erb
+    chef_bootstrap_file =
+    /home/thirai/sclman/chef-repo/.chef/bootstrap/chef-full.erb
+    [OPENSTACK]
+    openstack_secrete_key = /home/thirai/novakey01
+    openstack_username = demo
+    openstack_api_key = demo
+    openstack_auth_url = "http://10.200.9.46:5000/v2.0/tokens"
+    openstack_tenant = service
+    openstack_net_id = "2431d382-1566-4780-b2ba-8571b4efcbec"
+    [SENSU]
+    sensu_url = "http://10.200.10.95:4567"
+    [MANAGER]
+    man_flavor = "m1.tiny"
+    man_image = "precise-kwc"
+    man_key = "novakey01"
+    man_sensitivity = 10
+    man_pid = /tmp/sclman.pid
+    man_log = /tmp/sclman.log
 
 Boot sclman.rb daemon
 ----
