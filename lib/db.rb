@@ -5,7 +5,7 @@ require "inifile"
 
 class IniLoad
   def initialize
-    @ini = IniFile.load("/home/thirai/sclman/sclman.conf")
+    @ini = IniFile.load("./sclman.conf")
   end
 
   def search( section, name )
@@ -95,26 +95,28 @@ def update_dec_counter(groupname)
   end
 end
 
-# update_counter("lb01")
-
 def show_table(tablename)
   if tablename == "lbmembers" then
     ConnectDb.connect() do | sock |
+      table_hash = []
       sth = sock.execute("SELECT * FROM #{tablename}")
       while row = sth.fetch_hash do
-        printf "ID: %d, InstanceName: %s, IPaddr: %s, Groupname: %s\n",
-               row["id"], row["instancename"], row["ipaddr"], row["groupname"]
+        hash = {"id" => row["id"], "instancename" => row["instancename"], "ipaddr" => row["ipaddr"], "groupname" => row["groupname"]}
+        table_hash << hash
       end
       sth.finish
+      return table_hash
     end
   elsif tablename == "counter" then
     ConnectDb.connect() do | sock |
       sth = sock.execute("SELECT * FROM #{tablename}")
+      table_hash = []
       while row = sth.fetch_hash do
-        printf "ID: %d, InstanceName: %s, Count: %d\n",
-                row["id"], row["groupname"], row["count"]
+        hash = {"id" => row["id"], "groupname" => row["groupname"], "counter" => row["counter"]}
+        table_hash << hash
       end
       sth.finish
+      return table_hash
     end
   else
     puts "error was occoured. tablename should be 'lbmembers' or 'counter'."

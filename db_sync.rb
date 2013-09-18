@@ -5,7 +5,7 @@ require "inifile"
 
 class IniLoad
   def initialize
-    @ini = IniFile.load("/home/thirai/sclman/sclman.conf")
+    @ini = IniFile.load("./sclman.conf")
   end
 
   def search( section, name )
