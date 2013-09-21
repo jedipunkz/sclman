@@ -8,7 +8,7 @@ require './lib/db.rb'
 
 class IniLoad
   def initialize
-    @ini = IniFile.load("./sclman.conf")
+    @ini = IniFile.load("/home/thirai/sclman/sclman.conf")
   end
 
   def search( section, name )
@@ -37,3 +37,4 @@ def sensu_get_instance_load()
   end
   return instances
 end
+

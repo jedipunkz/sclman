@@ -21,7 +21,3 @@ module SshCon
     return stderr
   end
 end
-
-# p = SshCon.connect("10.200.10.2")
-# p p
-

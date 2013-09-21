@@ -19,7 +19,7 @@ require 'chef/knife/environment_list'
 
 class IniLoad
   def initialize
-    @ini = IniFile.load("./sclman.conf")
+    @ini = IniFile.load("/home/thirai/sclman/sclman.conf")
   end
 
   def search( section, name )

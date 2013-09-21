@@ -6,7 +6,7 @@ require 'fog'
 
 class IniLoad
   def initialize
-    @ini = IniFile.load("./sclman.conf")
+    @ini = IniFile.load("/home/thirai/sclman/sclman.conf")
   end
 
   def search( section, name )
@@ -53,8 +53,6 @@ def openstack_create_node(flavorname, imagename, keyname, instancename)
   end
 end
 
-# openstack_create_node("m1.tiny", "precise-kwc", "novakey01", "test99")
-
 def openstack_delete_node(instancename)
   OpenStackCompute.connect() do |sock|
     instance = sock.servers.find { |i| i.name = instancename }
@@ -62,12 +60,8 @@ def openstack_delete_node(instancename)
     p server
     p instance
     p instance.id
-    p '---'
   end
 end
-
-
-# openstack_delete_node("test99")
 
 def openstack_search_ip(instancename)
   OpenStackCompute.connect() do |sock|
@@ -83,9 +77,6 @@ def openstack_search_ip(instancename)
   end
 end
 
-#p = openstack_search_ip("foo0")
-#p p
-
 def openstack_check_flavor(flavorname)
   OpenStackCompute.connect() do |sock|
     flavor = sock.flavors.find { |f| f.name == flavorname }
@@ -95,7 +86,6 @@ def openstack_check_flavor(flavorname)
   end
 end
 
-# openstack_check_flavor("m1.tiny")
 
 def openstack_check_image(imagename)
   OpenStackCompute.connect() do |sock|
@@ -105,11 +95,3 @@ def openstack_check_image(imagename)
     end
   end
 end
-
-# openstack_check_image("precise-kwc")
-# openstack_create_node("m1.tiny", "precise-kwc", "novakey01", "testvm01")
-# openstack_delete_node("testvm02")
-# instance = @compute.servers.find { |i| i.name = "testvm01" }
-# p instance.addresses
-# p = openstack_search_ip("testvm01")
-# p p

@@ -116,7 +116,10 @@ class SclmanDaemon < DaemonSpawn::Base
           counter_del = 0
         end
         if counter_del >= $man_sensitivity.to_i then
-          del_server("stb_group")
+          $stb_group.each do |g|
+            del_server(g)
+          end
+          # del_server("stb_group")
           counter_del = 0; trig_add = 0; trig_del = 0
         else
           trig_add = 0; trig_del = 1
