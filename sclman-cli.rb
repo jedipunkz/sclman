@@ -55,7 +55,7 @@ if method == "bootstrap" then
       puts "instance is booting... : #{instance}lb#{num}"
       openstack_create_node(flavor, image, key, instance+"lb"+num.to_s)
       ipaddr = openstack_search_ip(instance)
-      sleep(20)
+      sleep(40)
       fork do
         chef_create_node(instance+"lb"+num.to_s, ipaddr, environment, "lb")
       end
@@ -65,7 +65,7 @@ if method == "bootstrap" then
       puts "instance is booting... : #{instance}web#{num}"
       openstack_create_node(flavor, image, key, instance+"web"+num.to_s)
       ipaddr = openstack_search_ip(instance)
-      sleep(20)
+      sleep(40)
       fork do
         chef_create_node(instance+"web"+num.to_s, ipaddr, environment, "web")
       end

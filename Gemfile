@@ -1,7 +1,6 @@
-# A sample Gemfile
+# sclman Gemfile
 source "https://rubygems.org"
 
-# gem "rails"
 gem "dbi"
 gem "dbd-mysql"
 gem "mysql"
