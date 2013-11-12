@@ -6,6 +6,7 @@
 require './lib/chef.rb'
 require './lib/openstack.rb'
 require './lib/db.rb'
+require './lib/ssh.rb'
 
 method      = ARGV[0]
 flavor      = ARGV[1]
@@ -13,6 +14,7 @@ image       = ARGV[2]
 key         = ARGV[3]
 environment = ARGV[4]
 instance    = ARGV[5]
+count       = ARGV[6]
 
 usage = <<"EOB"
 Usage: ruby sclman.rb bootstrap flavor image key environment instancename
@@ -33,7 +35,8 @@ if method == "bootstrap" then
   key         = ARGV[3]
   environment = ARGV[4]
   instance    = ARGV[5]
-  if ARGV.size != 6 then
+  count       = ARGV[6]
+  if ARGV.size != 7 then
     puts "error. number of arguments is illegal."
     puts usage
     exit
@@ -50,12 +53,25 @@ if method == "bootstrap" then
   
   num = 0
   role_trig = 0
-  while num < 3 do
+  while num < count.to_i do
     if role_trig == 0 then
       puts "instance is booting... : #{instance}lb#{num}"
       openstack_create_node(flavor, image, key, instance+"lb"+num.to_s)
       ipaddr = openstack_search_ip(instance)
-      sleep(40)
+      #sleep(40)
+
+      loop do
+        result = check_ssh(ipaddr, 'root', '/home/thirai/novakey01.private')
+        if result != 'ok' then
+          sleep(10)
+          p 'waiting ssh session from instance.'
+          redo
+        else
+          sleep(5)
+          break
+        end
+      end
+
       fork do
         chef_create_node(instance+"lb"+num.to_s, ipaddr, environment, "lb")
       end
@@ -73,7 +89,7 @@ if method == "bootstrap" then
     end
     num += 1
   end
-  insert_table_counter(environment, 3)
+  insert_table_counter(environment, count, count)
 
 elsif method == "delete" then
   method      = ARGV[0]

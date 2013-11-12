@@ -51,6 +51,7 @@ def create_table(tablename)
                   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
                   groupname CHAR(20) NOT NULL,
                   count INT NOT NULL,
+                  basic_count INT NOT NULL,
                   PRIMARY KEY (id))")
     end
   else
@@ -71,10 +72,10 @@ def delete_table_lbmembers(instancename)
   end
 end
 
-def insert_table_counter(groupname, count)
+def insert_table_counter(groupname, count, basic_count)
   ConnectDb.connect() do |sock|
-    sock.do("INSERT INTO counter (id, groupname, count) VALUE(?, ?, ?)",
-                nil, "#{groupname}", "#{count}")
+    sock.do("INSERT INTO counter (id, groupname, count, basic_count) VALUE(?, ?, ?, ?)",
+                nil, "#{groupname}", "#{count}", "#{basic_count}")
   end
 end
 
@@ -197,3 +198,11 @@ def db_search_count(groupname)
   end
 end
 
+def db_search_basic_count(groupname)
+  ConnectDb.connect() do |sock|
+    sth = sock.execute("SELECT * FROM counter WHERE groupname = ?", "#{groupname}")
+    while row = sth.fetch do
+      return row["basic_count"]
+    end
+  end
+end

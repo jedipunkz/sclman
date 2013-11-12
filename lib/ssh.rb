@@ -21,3 +21,19 @@ module SshCon
     return stderr
   end
 end
+
+def check_ssh(ipaddr, user, key)
+  begin
+    Net::SSH.start("#{ipaddr}", "#{user}", :keys => ["#{key}"], :passphrase => '', :timeout => 10) do |ssh|
+      return 'ok'
+    end
+  rescue Timeout::Error
+    @error = "Timed out"
+  rescue Errno::EHOSTUNREACH
+    @error = "Host unreachable"
+  rescue Errno::ECONNREFUSED
+    @error = "Connection refused"
+  rescue Net::SSH::AuthenticationFailed
+    @error = "Authentication failure"
+  end
+end

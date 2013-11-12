@@ -4,6 +4,7 @@ require './lib/openstack.rb'
 require './lib/chef.rb'
 require './lib/db.rb'
 require './lib/sensu.rb'
+require './lib/ssh.rb'
 require 'inifile'
 require 'daemon_spawn'
 
@@ -29,7 +30,18 @@ def add_server()
     shortname = make_shortname(adding)
     openstack_create_node($man_flavor, $man_image, $man_key, shortname+"web"+count_adding.to_s)
     ipaddr = openstack_search_ip(shortname)
-    sleep(20)
+    loop do
+      result = check_ssh(ipaddr, 'root', '/home/thirai/novakey01.private')
+      if result != 'ok' then
+        p 'waiting ssh session from instance.....'
+        sleep(10)
+        redo
+      else
+        sleep(5)
+        break
+      end
+    end
+    # sleep(20)
     chef_create_node(shortname+"web"+count_adding.to_s, ipaddr, adding, "web")
     insert_table_lbmembers(shortname+"web"+count_adding.to_s, ipaddr, adding)
     count_adding += 1
@@ -39,9 +51,11 @@ end
 
 def del_server(group)
   $stb_group.each do |deleting|
+    count_basic = db_search_basic_count(deleting)
     db_count_deleting = db_search_count(deleting)
-      count_deleting = db_count_deleting - 1
-    if count_deleting.to_i >= 3 then
+    count_deleting = db_count_deleting - 1
+    #if count_deleting.to_i >= 3 then
+    if count_deleting.to_i >= count_basic.to_i then
       puts "deleting server at #{deleting}, count_deleting : #{count_deleting}"
       shortname = make_shortname(deleting)
       openstack_delete_node(shortname+"web"+count_deleting.to_s)
