@@ -206,3 +206,13 @@ def db_search_basic_count(groupname)
     end
   end
 end
+
+def db_search_lbmembers()
+  ConnectDb.connect() do |sock|
+    sth = sock.execute("SELECT * FROM lbmembers")
+    sth.fetch do |row|
+      printf "id: %s, instancename: %s, ip: %s, groupname: %s\n", row[0], row[1], row[2], row[3]
+    end
+  end
+end
+

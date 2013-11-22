@@ -3,6 +3,7 @@
 # usage : ruby bootstrap_cli.rb bootstrap flavor image key environment instancename
 #       : ruby bootstrap_cli.rb delete environment
 
+require 'inifile'
 require './lib/chef.rb'
 require './lib/openstack.rb'
 require './lib/db.rb'
@@ -17,15 +18,31 @@ instance    = ARGV[5]
 count       = ARGV[6]
 
 usage = <<"EOB"
-Usage: ruby sclman.rb bootstrap flavor image key environment instancename
+Usage: ruby sclman-cli.rb bootstrap flavor image key environment instancename
         flavor : OpenStack flavor name
         image  : OpenStack image name
         key    : OpenStack secret key name
         environment : Chef environment name
         instancename : instancename (auto adding numeric number)
-or
-Usage: ruby sclman.rb delete environment
+  or
+        ruby sclman-cli.rb delete environment
+  or
+        ruby sclman-cli.rb list
 EOB
+
+class IniLoad
+  def initialize
+    @ini = IniFile.load("/home/thirai/sclman/sclman.conf")
+  end
+
+  def search( section, name )
+    val = @ini[section][name]
+    return "#{val}"
+  end
+end
+
+ini = IniLoad.new
+$openstack_secret_key = ini.search("OPENSTACK", "openstack_secrete_key")
 
 if method == "bootstrap" then
   # synatx checks
@@ -58,15 +75,15 @@ if method == "bootstrap" then
       puts "instance is booting... : #{instance}lb#{num}"
       openstack_create_node(flavor, image, key, instance+"lb"+num.to_s)
       ipaddr = openstack_search_ip(instance)
-      #sleep(40)
 
       loop do
-        result = check_ssh(ipaddr, 'root', '/home/thirai/novakey01.private')
+        result = check_ssh(ipaddr, 'root', $openstack_secret_key)
         if result != 'ok' then
-          sleep(10)
-          p 'waiting ssh session from instance.'
+          puts 'waiting ssh session from instance.....'
+          sleep(5)
           redo
         else
+          puts 'I found ssh session. now bootstraping the chef.....'
           sleep(5)
           break
         end
@@ -108,6 +125,16 @@ elsif method == "delete" then
     openstack_delete_node(server)
     sleep(3)
   end
+  # debug
+  p instancename
+elsif method == "list" then
+  method = ARGV[0]
+  if ARGV.size != 1 then
+    puts "error. number of arguments is illegal."
+    puts usage
+    exit
+  end
+  db_search_lbmembers
 else
   puts usage
 end
