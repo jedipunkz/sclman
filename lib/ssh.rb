@@ -35,5 +35,9 @@ def check_ssh(ipaddr, user, key)
     @error = "Connection refused"
   rescue Net::SSH::AuthenticationFailed
     @error = "Authentication failure"
+  rescue Net::SSH::HostKeyMismatch => e
+    puts "remembering new key: #{e.fingerprint}"
+    e.remember_host!
+    retry
   end
 end
