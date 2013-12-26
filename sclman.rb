@@ -15,6 +15,7 @@ $man_key = ini.search("MANAGER", "man_key")
 $man_sensitivity = ini.search("MANAGER", "man_sensitivity")
 $man_pid = ini.search("MANAGER", "man_pid")
 $man_log = ini.search("MANAGER", "man_log")
+$openstack_secret_key = ini.search("OPENSTACK", "openstack_secrete_key")
 
 def make_shortname(environment)
   instances = db_search_instance(environment)
@@ -31,21 +32,23 @@ def add_server()
     openstack_create_node($man_flavor, $man_image, $man_key, shortname+"web"+count_adding.to_s)
     ipaddr = openstack_search_ip(shortname)
     loop do
-      result = check_ssh(ipaddr, 'root', '/home/thirai/novakey01.private')
+      result = check_ssh(ipaddr, 'ubuntu', $openstack_secret_key)
       if result != 'ok' then
-        p 'waiting ssh session from instance.....'
-        sleep(10)
+        puts 'Waiting ssh session from an instance.....'
+        sleep(5)
         redo
       else
+        puts 'I found ssh session. Now bootstraping the chef.....'
         sleep(5)
         break
       end
     end
-    # sleep(20)
     chef_create_node(shortname+"web"+count_adding.to_s, ipaddr, adding, "web")
-    insert_table_lbmembers(shortname+"web"+count_adding.to_s, ipaddr, adding)
+    #insert_table_lbmembers(shortname+"web"+count_adding.to_s, ipaddr, adding)
+    date = Time.now.strftime("%Y-%m-%d-%H:%M:%S")
+    insert_table_lbmembers(shortname+"web"+count_adding.to_s, ipaddr, adding, date, date)
     count_adding += 1
-    update_inc_counter(adding)
+    update_inc_counter(adding, date)
   end
 end
 
@@ -61,7 +64,8 @@ def del_server(group)
       openstack_delete_node(shortname+"web"+count_deleting.to_s)
       chef_delete_node(shortname+"web"+count_deleting.to_s)
       delete_table_lbmembers(shortname+"web"+count_deleting.to_s)
-      update_dec_counter(deleting)
+      date = Time.now.strftime("%Y-%m-%d-%H:%M:%S")
+      update_dec_counter(deleting, date)
     end
   end
 end

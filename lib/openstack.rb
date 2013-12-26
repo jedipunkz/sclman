@@ -42,9 +42,10 @@ end
 def openstack_create_node(flavorname, imagename, keyname, instancename)
   OpenStackCompute.connect() do |sock|
     # flavor = sock.flavors.find { |f| f.name = flavorname }
-    image = sock.images.find { |i| i.name = imagename }
+    #image = sock.images.find { |i| i.name = imagename }
+                                 #:image_ref => image.id,
     server = sock.servers.create :name => instancename,
-                                 :image_ref => image.id,
+                                 :image_ref => imagename,
                                  :flavor_ref => flavorname.to_i,
                                  :key_name => keyname,
                                  :nics => ["net_id" => $openstack_net_id]

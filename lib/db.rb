@@ -1,12 +1,12 @@
 #!/usr/bin/env ruby
 
-require "dbi"
+require "rubygems"
 require "inifile"
+require "active_record"
 
 class IniLoad
   def initialize
-    # @ini = IniFile.load("./sclman.conf")
-    @ini = IniFile.load("/home/thirai/sclman/sclman.conf")
+    @ini = IniFile.load("./sclman.conf")
   end
 
   def search( section, name )
@@ -15,204 +15,129 @@ class IniLoad
   end
 end
 
-module ConnectDb
-  def self.connect()
-    ini = IniLoad.new
-    dbname = ini.search("DB", "dbname")
-    dbuser = ini.search("DB", "dbuser")
-    dbpass = ini.search("DB", "dbpass")
-    dbconn = DBI.connect("DBI:Mysql:#{dbname}:localhost", "#{dbuser}", "#{dbpass}")
-    begin
-      result = yield dbconn
-    rescue DBI::DatabaseErro => e
-      puts "An error occurred"
-      puts "Error code: #{e.err}"
-      puts "Error message: #{e.errstr}"
-    ensure
-      dbconn.disconnect if dbconn
-    end
-  rescue Errno::ECONNREFUSED
-  end
+ActiveRecord::Base.establish_connection(
+  adapter:  "mysql2",
+  host:     "localhost",
+  username: "sclmanuser",
+  password: "sclmanpass",
+  database: "sclman",
+)
+
+class Lbmembers < ActiveRecord::Base
+  self.table_name = 'lbmembers'
 end
 
-def create_table(tablename)
-  if tablename == "lbmembers" then
-    ConnectDb.connect() do |sock|
-      sock.do("CREATE TABLE #{tablename} (
-                  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-                  instancename CHAR(20) NOT NULL,
-                  ipaddr CHAR(20) NOT NULL,
-                  groupname CHAR(20) NOT NULL,
-                  PRIMARY KEY (id))")
-    end
-  elsif tablename == "counter" then
-    ConnectDb.connect() do |sock|
-      sock.do("CREATE TABLE #{tablename} (
-                  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-                  groupname CHAR(20) NOT NULL,
-                  count INT NOT NULL,
-                  basic_count INT NOT NULL,
-                  PRIMARY KEY (id))")
-    end
-  else
-    puts "error was occoured. table name should be 'lbmembers' or 'counter'."
-  end
+class Counter < ActiveRecord::Base
+  self.table_name = 'counter'
 end
 
-def insert_table_lbmembers(instancename, ipaddr, groupname)
-  ConnectDb.connect() do |sock|
-    sock.do("INSERT INTO lbmembers (id, instancename, ipaddr, groupname) VALUE(?, ?, ?, ?)",
-             nil, "#{instancename}", "#{ipaddr}", "#{groupname}")
-  end
+def insert_table_lbmembers(instancename, ipaddr, groupname, created_date, updated_date)
+  instance = Lbmembers.new
+  instance.instancename = instancename
+  instance.ipaddr = ipaddr
+  instance.groupname = groupname
+  instance.created_date = created_date
+  instance.updated_date = updated_date
+  instance.save
 end
 
 def delete_table_lbmembers(instancename)
-  ConnectDb.connect() do |sock|
-    sock.do("DELETE FROM lbmembers WHERE instancename = ?", instancename)
-  end
+  Lbmembers.destroy_all(:instancename => instancename)
 end
 
-def insert_table_counter(groupname, count, basic_count)
-  ConnectDb.connect() do |sock|
-    sock.do("INSERT INTO counter (id, groupname, count, basic_count) VALUE(?, ?, ?, ?)",
-                nil, "#{groupname}", "#{count}", "#{basic_count}")
-  end
+def insert_table_counter(groupname, count, basic_count, created_date, updated_date)
+  counter = Counter.new
+  counter.groupname = groupname
+  counter.count = count
+  counter.basic_count = basic_count
+  counter.created_date = created_date
+  counter.updated_date = updated_date
+  counter.save
 end
 
 def delete_table_counter(groupname)
-  ConnectDb.connect() do |sock|
-    sock.do("DELETE FROM counter WHERE groupname = ?", groupname)
-  end
+  Counter.destroy_all(:groupname => groupname)
 end
 
-def update_inc_counter(groupname)
-  ConnectDb.connect() do |sock|
-    sth = sock.execute("UPDATE counter SET count = count + 1 WHERE groupname = ?", "#{groupname}")
-  end
+def update_inc_counter(groupname, date)
+  counter = Counter.where(groupname: groupname).first
+  counter.increment!(:count)
+  counter.updated_date = date
+  counter.save
 end
 
-def update_dec_counter(groupname)
-  ConnectDb.connect() do |sock|
-    sth = sock.execute("UPDATE counter SET count = count - 1 WHERE groupname = ?", "#{groupname}")
-  end
-end
-
-def show_table(tablename)
-  if tablename == "lbmembers" then
-    ConnectDb.connect() do | sock |
-      table_hash = []
-      sth = sock.execute("SELECT * FROM #{tablename}")
-      while row = sth.fetch_hash do
-        hash = {"id" => row["id"], "instancename" => row["instancename"], "ipaddr" => row["ipaddr"], "groupname" => row["groupname"]}
-        table_hash << hash
-      end
-      sth.finish
-      return table_hash
-    end
-  elsif tablename == "counter" then
-    ConnectDb.connect() do | sock |
-      sth = sock.execute("SELECT * FROM #{tablename}")
-      table_hash = []
-      while row = sth.fetch_hash do
-        hash = {"id" => row["id"], "groupname" => row["groupname"], "counter" => row["counter"]}
-        table_hash << hash
-      end
-      sth.finish
-      return table_hash
-    end
-  else
-    puts "error was occoured. tablename should be 'lbmembers' or 'counter'."
-  end
+def update_dec_counter(groupname, date)
+  counter = Counter.where(groupname: groupname).first
+  counter.decrement!(:count)
+  counter.updated_date = date
+  counter.save
 end
 
 def db_search_instance(groupname)
   instances = []
-  ConnectDb.connect() do | sock |
-    sth = sock.execute("SELECT * FROM lbmembers WHERE groupname = ?", "#{groupname}")
-    while row = sth.fetch_hash do
-      instances << row["instancename"]
-    end
+  records = Lbmembers.where(groupname: groupname)
+  records.each do |val|
+    instancename = val.instancename
+    instances << instancename
   end
   return instances
 end
 
 def db_search_ipaddr(instancename)
-  ipaddr = []
-  ConnectDb.connect() do | sock |
-    sth = sock.execute("SELECT * FROM lbmembers WHERE instancename = ?", "#{instancename}")
-    while row = sth.fetch_hash do
-      return row["ipaddr"]
-    end
+  records = Lbmembers.where(instancename: instancename)
+  records.each do |val|
+    return val.ipaddr
   end
 end
 
 def db_search_group(instancename)
   groups = []
-  ConnectDb.connect() do | sock |
-    sth = sock.execute("SELECT * FROM lbmembers WHERE instancename = ?", "#{instancename}")
-    while row = sth.fetch_hash do
-      groups << row["groupname"]
-    end
+  records = Lbmembers.where(instancename: instancename)
+  records.each do |val|
+    groupname = val.groupname
+    groups << groupname
   end
-  groups.uniq
   return groups
 end
 
 def db_search_group_all()
   groups = []
-  ConnectDb.connect() do |sock|
-    sth = sock.execute("SELECT * FROM lbmembers")
-    while row = sth.fetch do
-      groups << row["groupname"]
-    end
+  records = Lbmembers.all
+  records.each do |val|
+    groupname = val.groupname
+    groups << groupname
   end
   return groups
 end
 
-def db_search_ipaddr(instancename)
-  ConnectDb.connect() do |sock|
-    sth = sock.execute("SELECT * FROM lbmembers WHERE instancename = ?", "#{instancename}")
-    while row = sth.fetch do
-      return row["ipaddr"]
-    end
-  end
-end
-
 def db_search_instance_all()
   instances = []
-  ConnectDb.connect() do |sock|
-    sth = sock.execute("SELECT * FROM lbmembers")
-    while row = sth.fetch do
-      instances << row["instancename"]
-    end
+  records = Lbmembers.all
+  records.each do |val|
+    instancename = val.instancename
+    instances << instancename
   end
   return instances
 end
 
 def db_search_count(groupname)
-  ConnectDb.connect() do |sock|
-    sth = sock.execute("SELECT * FROM counter WHERE groupname = ?", "#{groupname}")
-    while row = sth.fetch do
-      return row["count"]
-    end
+  records = Counter.where(groupname: groupname)
+  records.each do |val|
+    return val.count
   end
 end
 
 def db_search_basic_count(groupname)
-  ConnectDb.connect() do |sock|
-    sth = sock.execute("SELECT * FROM counter WHERE groupname = ?", "#{groupname}")
-    while row = sth.fetch do
-      return row["basic_count"]
-    end
+  records = Counter.where(groupname: groupname)
+  records.each do |val|
+    return val.basic_count
   end
 end
 
 def db_search_lbmembers()
-  ConnectDb.connect() do |sock|
-    sth = sock.execute("SELECT * FROM lbmembers")
-    sth.fetch do |row|
-      printf "id: %s, instancename: %s, ip: %s, groupname: %s\n", row[0], row[1], row[2], row[3]
-    end
+  records = Lbmembers.all
+  records.each do |val|
+    printf "id: %s, instancename: %s, ip: %s, groupname: %s, created: %s, updated: %s\n",
+      val.id, val.instancename, val.ipaddr, val.groupname, val.created_date, val.updated_date
   end
 end
-

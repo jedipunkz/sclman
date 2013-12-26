@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require "dbi"
+#require "dbi"
 require "inifile"
 require 'rubygems'
 require "chef"
@@ -93,7 +93,8 @@ def chef_create_node(instancename, ipaddr, envname, role)
 
   kb = Chef::Knife::Bootstrap.new
   kb.name_args = [ipaddr]
-  kb.config[:ssh_user] = "root"
+  #kb.config[:ssh_user] = "root"
+  kb.config[:ssh_user] = "ubuntu"
   kb.config[:chef_node_name] = instancename
   kb.config[:identity_file] = $openstack_secret_key
   kb.config[:ssh_port] = "22"
@@ -113,10 +114,18 @@ def chef_delete_node(instancename)
   nd = Chef::Knife::NodeDelete.new
   nd.name_args = [ instancename ]
   nd.config[:yes] = true
-  nd.run
+  begin
+    nd.run
+  rescue Net::HTTPServerException
+    p 'not found.'
+  end
 
   cd = Chef::Knife::ClientDelete.new
   cd.name_args = [ instancename ]
   cd.config[:yes] = true
-  cd.run
+  begin
+    cd.run
+  rescue Net::HTTPServerException
+    p 'not found.'
+  end
 end

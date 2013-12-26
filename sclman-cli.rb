@@ -32,7 +32,7 @@ EOB
 
 class IniLoad
   def initialize
-    @ini = IniFile.load("/home/thirai/sclman/sclman.conf")
+    @ini = IniFile.load("./sclman.conf")
   end
 
   def search( section, name )
@@ -77,14 +77,15 @@ if method == "bootstrap" then
       ipaddr = openstack_search_ip(instance)
 
       loop do
-        result = check_ssh(ipaddr, 'root', $openstack_secret_key)
+        result = check_ssh(ipaddr, 'ubuntu', $openstack_secret_key)
+        puts "ipaddr: #{ipaddr}, key: #{$openstack_secret_key}"
         if result != 'ok' then
           puts 'waiting ssh session from instance.....'
           sleep(5)
           redo
         else
           puts 'I found ssh session. now bootstraping the chef.....'
-          sleep(5)
+          sleep(8)
           break
         end
       end
@@ -92,7 +93,9 @@ if method == "bootstrap" then
       fork do
         chef_create_node(instance+"lb"+num.to_s, ipaddr, environment, "lb")
       end
-      insert_table_lbmembers(instance+"lb"+num.to_s, ipaddr, environment)
+      # insert_table_lbmembers(instance+"lb"+num.to_s, ipaddr, environment)
+      date = Time.now.strftime("%Y-%m-%d-%H:%M:%S")
+      insert_table_lbmembers(instance+"lb"+num.to_s, ipaddr, environment, date, date)
       role_trig = 1
     else
       puts "instance is booting... : #{instance}web#{num}"
@@ -102,11 +105,12 @@ if method == "bootstrap" then
       fork do
         chef_create_node(instance+"web"+num.to_s, ipaddr, environment, "web")
       end
-      insert_table_lbmembers(instance+"web"+num.to_s, ipaddr, environment)
+      # insert_table_lbmembers(instance+"web"+num.to_s, ipaddr, environment)
+      insert_table_lbmembers(instance+"web"+num.to_s, ipaddr, environment, date, date)
     end
     num += 1
   end
-  insert_table_counter(environment, count, count)
+  insert_table_counter(environment, count, count, date, date)
 
 elsif method == "delete" then
   method      = ARGV[0]
