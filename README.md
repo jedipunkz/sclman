@@ -124,21 +124,20 @@ endpoint information, username, mysql username, password ....
     chef_validation_key = /home/thirai/sclman/chef-repo/.chef/chef-validator.pem
     chef_server_url = "https://10.200.10.96"
     #chef_bootstrap_file = /home/thirai/chef-full.erb
-    chef_bootstrap_file =
-    /home/thirai/sclman/chef-repo/.chef/bootstrap/chef-full.erb
+    chef_bootstrap_file = /home/thirai/sclman/chef-repo/.chef/bootstrap/chef-full.erb
     [OPENSTACK]
-    openstack_secrete_key = /home/thirai/novakey01
+    openstack_secrete_key = /home/thirai/sclman_key
     openstack_username = demo
     openstack_api_key = demo
-    openstack_auth_url = "http://10.200.9.46:5000/v2.0/tokens"
+    openstack_auth_url = "http://10.200.10.100:5000/v2.0/tokens"
     openstack_tenant = service
-    openstack_net_id = "2431d382-1566-4780-b2ba-8571b4efcbec"
+    openstack_net_id = "07ab049a-ef40-4ee7-b2fe-178d16e5214d"
     [SENSU]
     sensu_url = "http://10.200.10.95:4567"
     [MANAGER]
-    man_flavor = "m1.tiny"
-    man_image = "precise-kwc"
-    man_key = "novakey01"
+    man_flavor = 2
+    man_image = "cdbed601-3671-4a15-b013-e6ef03e2a35f"
+    man_key = "sclman_key"
     man_sensitivity = 10
     man_pid = /tmp/sclman.pid
     man_log = /tmp/sclman.log
@@ -148,14 +147,24 @@ Boot sclman.rb daemon
 
 sclman.rb will boot daemon mode on linux. boot up 'sclman.rb' manager.
 
-    % ruby sclman.rb start
+    % bundle exec ruby sclman.rb start
+    % bundle exec ruby sclman.rb stop # to stop it.
+
+or now we supported to use 'gem god' for monitoring sclman process.
+
+    % god -c sclman.rb -D
+    % god stop sclman     # to stop it.
 
 Bootstrap minimum HTTP HA cluster
 ----
 
 bootstrap with sclman-cli.rb.
 
-    % ruby sclman-cli.rb bootstrap m1.tiny precise-kwc novakey01 <group_name> <server_name>
+    % bundle exec ruby sclman-cli.rb bootstrap <flavor_id> <image_id> <key_name> <group_name> <server_name>
+
+ex)
+
+    % bundle exec ruby sclman-cli.rb bootstrap 2 cdbed601-3671-4a15-b013-e6ef03e2a35f sclman_key foogroup01 foo 3
       
 You can find these instances on OpenStack.
 
@@ -168,6 +177,16 @@ ex.) server_name : foo
     | 2230788a-bb34-4cc4-8123-b2f32feaeec9 | fooweb1 | ACTIVE | int_net=172.24.17.4 |
     | 7dfd21b4-f76e-46d2-b7dc-f2d4278339d5 | fooweb2 | ACTIVE | int_net=172.24.17.3 |
     +--------------------------------------+---------+--------+---------------------+
+
+    mysql> select * from lbmembers;
+    +----+--------------+--------------+------------+---------------------+---------------------+
+    | id | instancename | ipaddr       | groupname  | created_date        | updated_date        |
+    +----+--------------+--------------+------------+---------------------+---------------------+
+    | 35 | foolb0       | 172.26.17.13 | foogroup01 | 2014-02-10-15:36:29 | 2014-02-10-15:36:29 |
+    | 36 | fooweb1      | 172.26.17.14 | foogroup01 | 2014-02-10-15:36:29 | 2014-02-10-15:36:29 |
+    | 37 | fooweb2      | 172.26.17.15 | foogroup01 | 2014-02-10-15:36:29 | 2014-02-10-15:36:29 |
+    +----+--------------+--------------+------------+---------------------+---------------------+
+    3 rows in set (0.00 sec)
 
 Access to LB server via your browser.
 
@@ -187,6 +206,17 @@ Load Balance instance.
     | 7dfd21b4-f76e-46d2-b7dc-f2d4278339d5 | fooweb2 | ACTIVE | int_net=172.24.17.3 |
     | 50554ea0-adcf-4459-a3c5-3b448b2395d6 | fooweb3 | ACTIVE | int_net=172.24.17.5 |
     +--------------------------------------+---------+--------+---------------------+
+
+    mysql> select * from lbmembers;
+    +----+--------------+--------------+------------+---------------------+---------------------+
+    | id | instancename | ipaddr       | groupname  | created_date        | updated_date        |
+    +----+--------------+--------------+------------+---------------------+---------------------+
+    | 35 | foolb0       | 172.26.17.13 | foogroup01 | 2014-02-10-15:36:29 | 2014-02-10-15:36:29 |
+    | 36 | fooweb1      | 172.26.17.14 | foogroup01 | 2014-02-10-15:36:29 | 2014-02-10-15:36:29 |
+    | 37 | fooweb2      | 172.26.17.15 | foogroup01 | 2014-02-10-15:36:29 | 2014-02-10-15:36:29 |
+    | 38 | fooweb3      | 172.26.17.16 | foogroup01 | 2014-02-10-15:47:41 | 2014-02-10-15:47:41 |
+    +----+--------------+--------------+------------+---------------------+---------------------+
+    4 rows in set (0.00 sec)
 
 Sensitivity
 ----
