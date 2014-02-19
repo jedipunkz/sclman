@@ -1,0 +1,153 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <title>Sclman-API</title>
+  <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <a href="../" class="navbar-brand">Sclman-API</a>
+        <button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-main">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+      </div>
+      <div class="navbar-collapse collapse" id="navbar-main">
+        <ul class="nav navbar-nav">
+          <li>
+            <a href="/">Main</a>
+          </li>
+          <li>
+            <a href="./lbmembers.json">Lbmembers</a>
+          </li>
+          <li>
+            <a href="./counters.json">Counters</a>
+          </li>
+        </ul>
+
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="http://builtwithbootstrap.com/" target="_blank">Built With Bootstrap</a></li>
+          <li><a href="https://wrapbootstrap.com/?ref=bsw" target="_blank">WrapBootstrap</a></li>
+        </ul>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <div class="page-header" id="banner">
+      <div class="row">
+        <div class="col-lg-6">
+          <h1>Sclman-API</h1>
+          <p class="lead">API and WebUI for Sclman</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>Bootstrap Instances</h3>
+    <div class="pull-right">
+      <form method="POST" action="/bootstrap" class="form-inline" role="form">
+        <select name="image" class="form-control">
+          <% @images.each do |image| %>
+          <option><%= image[0] %></option>
+          <% end %>
+        </select>
+        <select name="flavor" class="form-control">
+          <% @flavors.each do |flavor| %>
+          <option><%= flavor[0] %></option>
+          <% end %>
+        </select>
+        <select name="sshkey" class="form-control">
+          <% @sshkeys.each do |sshkey| %>
+          <option><%= sshkey[0] %></option>
+          <% end %>
+        </select>
+        <input type="text" name="instancename" value="InstanceName" class="form-control">
+        <input type="text" name="groupname" value="GroupName" class="form-control">
+        <button type="submit" class="btn btn-primary">Bootstrap</button>
+      </form>
+    </div>
+
+    <br><br><hr>
+
+    <h3>Instances</h3>
+    <div class="instance-list">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Instance Name</th>
+            <th>IP addr</th>
+            <th>Group Name</th>
+            <th>Created Date</th>
+            <th>Updated Date</th>
+          </tr>
+        </thead>
+        <tbody>
+        <% @lbmembers.each do |l| %>
+        <tr>
+          <td><%= l['id'] %></td>
+          <td><%= l['instancename'] %></td>
+          <td><%= l['ipaddr'] %></td>
+          <td><%= l['groupname'] %></td>
+          <td><%= l['created_date'] %></td>
+          <td><%= l['updated_date'] %></td>
+          <td>
+            <form method="POST" action="/delete" role="form">
+              <input type="hidden" name="instancename" value="<%= l['instancename'] %>" />
+              <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+          </td>
+        </tr>
+        <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <hr>
+
+    <h3>Groups</h3>
+    <div class="counter-list">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Group Name</th>
+            <th>Count</th>
+            <th>Basic Count</th>
+            <th>Created Date</th>
+            <th>Updated Date</th>
+          </th>
+        </thead>
+        <tbody>
+        <% @counters.each do |c| %>
+        <tr>
+          <td><%= c['id'] %></td>
+          <td><%= c['groupname'] %></td>
+          <td><%= c['count'] %></td>
+          <td><%= c['basic_count'] %></td>
+          <td><%= c['created_date'] %></td>
+          <td><%= c['updated_date'] %></td>
+          <td>
+            <form method="POST" action="/removegroup/<%= c['groupname'] %>" role="form">
+              <input type="hidden" name="environment" value="<%= c['groupname'] %>" />
+              <button type="submit" class="btn btn-danger">Remove</button>
+            </form>
+          </td>
+        </tr>
+        <% end %>
+        </tbody>
+      </table>
+    </div>
+
+  </div> <!-- container -->
+</body>
+</html>

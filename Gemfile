@@ -12,3 +12,5 @@ gem "daemon-spawn"
 gem "berkshelf"
 gem 'activerecord', '4.0.2'
 gem 'mysql2'
+gem 'god'
+gem 'sinatra'
