@@ -6,6 +6,8 @@ require 'sinatra'
 require './lib/openstack.rb'
 require './lib/db.rb'
 require './lib/chef.rb'
+require './lib/ssh.rb'
+require 'inifile'
 
 IMAGES = {
   'precise' => {'imageid' => 'cdbed601-3671-4a15-b013-e6ef03e2a35f'},
@@ -21,6 +23,19 @@ SSHKEYS = {
   'sclman_key' => {'keyname' => 'sclman_key'}
 }
 
+class IniLoad
+  def initialize
+    @ini = IniFile.load("./sclman.conf")
+  end
+
+  def search( section, name )
+    val = @ini[section][name]
+    return "#{val}"
+  end
+end
+
+ini = IniLoad.new
+$openstack_secret_key = ini.search("OPENSTACK", "openstack_secrete_key")
 
 ActiveRecord::Base.configurations = YAML.load_file('database.yml')
 ActiveRecord::Base.establish_connection('development')
@@ -58,6 +73,19 @@ post '/removegroup/:groupname' do |g|
   redirect '/'
 end
 
+get '/bootstrap' do
+  image = request['image']
+  flavor = request['flavor']
+  key = request['sshkey']
+  instancename = request['instancename']
+  groupname = request['groupname']
+  count = request['count']
+  Thread.new do
+    bootstrap(flavor, image, key, instancename, groupname, count)
+  end
+  redirect '/'
+end
+
 def remove_group(groupname)
   instancename = db_search_instance(groupname)
   instancename.each do |server|
@@ -67,4 +95,46 @@ def remove_group(groupname)
     openstack_delete_node(server)
     sleep(3)
   end
+end
+
+def bootstrap(flavor, image, key, instancename, groupname, count)
+  num = 0 # -> number of instance
+  role_trig = 0 # -> web or lb ? : role triger
+  while num < count.to_i do
+    if role_trig == 0 then
+      openstack_create_node(flavor, image, key, instancename+"lb"+num.to_s)
+      ipaddr = openstack_search_ip(instancename)
+      
+      loop do
+        result = check_ssh(ipaddr, 'ubuntu', $openstack_secret_key)
+        puts "ipaddr: #{ipaddr}, key: #{$openstack_secret_key}"
+        if result != 'ok' then
+          puts 'waiting ssh session from instance.....'
+          sleep(5)
+          redo
+        else
+          puts 'I found ssh session. now bootstraping the chef.....'
+          sleep(8)
+          break
+        end
+      end
+  
+      Thread.new do
+        chef_create_node(instancename+"lb"+num.to_s, ipaddr, groupname, "lb")
+      end
+      date = Time.now.strftime("%Y-%m-%d-%H:%M:%S")
+      insert_table_lbmembers(instancename+"lb"+num.to_s, ipaddr, groupname, date, date)
+      role_trig = 1
+    else
+      openstack_create_node(flavor, image, key, instancename+"web"+num.to_s)
+      ipaddr = openstack_search_ip(instancename)
+      sleep(40)
+      Thread.new do
+        chef_create_node(instancename+"web"+num.to_s, ipaddr, groupname, "web")
+      end
+      insert_table_lbmembers(instancename+"web"+num.to_s, ipaddr, groupname, date, date)
+    end
+    num += 1
+  end
+  insert_table_counters(groupname, count, count, date, date)
 end

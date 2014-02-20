@@ -52,17 +52,17 @@
       </div>
     </div>
 
-    <h3>Bootstrap Instances</h3>
+    <h3>Bootstrap Instance</h3>
     <div class="pull-right">
-      <form method="POST" action="/bootstrap" class="form-inline" role="form">
+      <form method="GET" action="/bootstrap" class="form-inline" role="form">
         <select name="image" class="form-control">
           <% @images.each do |image| %>
-          <option><%= image[0] %></option>
+          <option value="<%= image[1]['imageid'] %>"><%= image[0] %></option>
           <% end %>
         </select>
         <select name="flavor" class="form-control">
           <% @flavors.each do |flavor| %>
-          <option><%= flavor[0] %></option>
+          <option value="<%= flavor[1]['flavorid'] %>"><%= flavor[0] %></option>
           <% end %>
         </select>
         <select name="sshkey" class="form-control">
@@ -72,6 +72,11 @@
         </select>
         <input type="text" name="instancename" value="InstanceName" class="form-control">
         <input type="text" name="groupname" value="GroupName" class="form-control">
+        <select name="count" class="form-control">
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+        </select>
         <button type="submit" class="btn btn-primary">Bootstrap</button>
       </form>
     </div>
