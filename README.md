@@ -31,7 +31,7 @@ Apache License.
 Screenshot
 ----
 
-<img src="https://github.com/jedipunkz/sclman/blob/master/pix/sclman.png" width=600>
+<img src="https://raw.github.com/jedipunkz/sclman/master/pix/sclman.png" width=600>
 
 Required Architecture
 ----
