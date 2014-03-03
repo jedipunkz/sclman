@@ -3,5 +3,5 @@ development:
     database: sclman
     host: localhost
     username: root
-    password: aska360
+    password: root
     encoding: utf8

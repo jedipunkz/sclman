@@ -15,7 +15,7 @@ down, sclman manager will delete some servers in that HA cluster.
 git
 ----
 
-<git@gitlab.kddiweb.jp:thirai/sclman.git>
+<https://github.com/jedipunkz/sclman.git>
 
 Author
 ----

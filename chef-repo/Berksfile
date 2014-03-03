@@ -8,10 +8,10 @@ cookbook "rabbitmq", "2.0.0"
 cookbook 'users'
 
 # ha arch nginx
-cookbook 'nginx.lb', git: 'git@gitlab.kddiweb.jp:thirai/cookbook-nginx_lb.git'
-cookbook 'nginx', git: 'git@gitlab.kddiweb.jp:thirai/cookbook-nginx.git'
-cookbook 'chef-client', git: 'git@gitlab.kddiweb.jp:thirai/cookbook-chef-client.git'
-cookbook 'bobcontents', git: 'git@gitlab.kddiweb.jp:thirai/bobcontents.git'
+cookbook 'bobcontents', git: 'https://github.com/jedipunkz/bobcontents.git'
+cookbook 'nginx.lb', git: 'https://github.com/jedipunkz/cookbook-nginx_lb.git'
+cookbook 'nginx', git: 'https://github.com/jedipunkz/cookbook-nginx.git'
+cookbook 'chef-client', git: 'https://github.com/jedipunkz/chef-client.git'
 
 # sensu 
 cookbook "redis", git: "https://github.com/jedipunkz/chef-redis.git"
