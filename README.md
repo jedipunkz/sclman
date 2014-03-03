@@ -28,6 +28,11 @@ License
 
 Apache License.
 
+Screenshot
+----
+
+<img src="https://github.com/jedipunkz/sclman/blob/master/pix/sclman.png" width=600>
+
 Required Architecture
 ----
 
