@@ -55,7 +55,7 @@ Usage
 
 Download sclman via git.
 
-    % git clone git@gitlab.kddiweb.jp:thirai/sclman.git
+    % git clone https://github.com/jedipunkz/sclman.git
     % cd sclman
 
 Install gems.
